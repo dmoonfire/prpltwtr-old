@@ -347,9 +347,9 @@ void twitter_api_get_friends(TwitterRequestor * r, TwitterSendRequestMultiPageAl
     twitter_request_params_add(params, twitter_request_param_new("screen_name", r->account->username));
 
     if (twitter_option_api_use_json(r->account)) {
-		twitter_send_json_request_with_cursor(r, twitter_option_url_get_friends(r->account), params, -1, success_json_func, error_func, data);
+		//twitter_send_json_request_with_cursor(r, twitter_option_url_get_friends(r->account), params, -1, success_json_func, error_func, data);
 	} else {
-		twitter_send_xml_request_with_cursor(r, twitter_option_url_get_friends(r->account), params, -1, success_func, error_func, data);
+		//twitter_send_xml_request_with_cursor(r, twitter_option_url_get_friends(r->account), params, -1, success_func, error_func, data);
 	}
 }
 
@@ -414,7 +414,7 @@ void twitter_api_get_list_all(TwitterRequestor * r, const gchar * list_id, const
 
 void twitter_api_get_replies(TwitterRequestor * r, long long since_id, int count, int page, TwitterSendXmlRequestSuccessFunc success_func, TwitterSendRequestErrorFunc error_func, gpointer data)
 {
-    twitter_api_send_request_single(r, twitter_option_url_get_mentions(r->account), since_id, count, page, success_func, error_func, data);
+    //DREMtwitter_api_send_request_single(r, twitter_option_url_get_mentions(r->account), since_id, count, page, success_func, error_func, data);
 }
 
 void twitter_api_get_replies_all(TwitterRequestor * r, long long since_id, TwitterSendRequestMultiPageAllSuccessFunc success_func, TwitterSendRequestMultiPageAllErrorFunc error_func, gint max_count, gpointer data)
@@ -424,12 +424,12 @@ void twitter_api_get_replies_all(TwitterRequestor * r, long long since_id, Twitt
 
 void twitter_api_get_dms(TwitterRequestor * r, long long since_id, int count, int page, TwitterSendXmlRequestSuccessFunc success_func, TwitterSendRequestErrorFunc error_func, gpointer data)
 {
-    twitter_api_send_request_single(r, twitter_option_url_get_dms(r->account), since_id, count, page, success_func, error_func, data);
+    //DREMtwitter_api_send_request_single(r, twitter_option_url_get_dms(r->account), since_id, count, page, success_func, error_func, data);
 }
 
 void twitter_api_get_dms_all(TwitterRequestor * r, long long since_id, TwitterSendRequestMultiPageAllSuccessFunc success_func, TwitterSendRequestMultiPageAllErrorFunc error_func, gint max_count, gpointer data)
 {
-    twitter_api_get_all_since(r, twitter_option_url_get_dms(r->account), since_id, success_func, error_func, TWITTER_EVERY_DMS_COUNT, max_count, data);
+    //DREMtwitter_api_get_all_since(r, twitter_option_url_get_dms(r->account), since_id, success_func, error_func, TWITTER_EVERY_DMS_COUNT, max_count, data);
 }
 
 void twitter_api_set_status(TwitterRequestor * r, const char *msg, long long in_reply_to_status_id, TwitterSendXmlRequestSuccessFunc success_func, TwitterSendRequestErrorFunc error_func, gpointer data)
