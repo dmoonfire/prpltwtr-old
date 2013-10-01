@@ -328,7 +328,7 @@ TwitterUserTweet *twitter_verify_credentials_parse(xmlnode * node)
 
 TwitterUserTweet *twitter_verify_credentials_json_parse(JsonNode * node)
 {
-  TwitterUserData *user = NULL; /* DREM twitter_user_node_parse(node);*/
+  // DREM TwitterUserData *user = twitter_user_node_parse(node);
 	TwitterTweet   *tweet;
 	TwitterUserTweet *data;
 	if (!user)

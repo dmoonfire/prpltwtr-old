@@ -497,28 +497,33 @@ static void twitter_json_request_success_cb(TwitterRequestor * r, const gchar * 
     TwitterSendJsonRequestData *request_data = user_data;
     const gchar    *error_message = NULL;
     gchar          *error_node_text = NULL;
-    xmlnode        *response_node = NULL;
+    JsonParser *parser;
+	GError *error = NULL;
+	JsonNode *response_node = NULL;
     TwitterRequestErrorType error_type = TWITTER_REQUEST_ERROR_NONE;
 
-	purple_debug_error(purple_account_get_protocol_id(r->account), "Response error: invalid JSON\n");
-	/* DREM
-    response_node = xmlnode_from_str(response, strlen(response));
-    if (!response_node) {
-        purple_debug_error(purple_account_get_protocol_id(r->account), "Response error: invalid xml\n");
-        error_type = TWITTER_REQUEST_ERROR_INVALID_XML;
+	parser = json_parser_new();
+
+    json_parser_load_from_data(parser, response, strlen(response), &error);
+
+	if (error) {
+	  purple_debug_error(purple_account_get_protocol_id(r->account), "Response error: invalid json: %s\n", error->message);
+        error_type = TWITTER_REQUEST_ERROR_INVALID_XML; // DREM Nope
         error_message = response;
-    } else {
+	} else {
+	  /* DREM
         if ((error_message = twitter_xml_node_parse_error(response_node))) {
             error_type = TWITTER_REQUEST_ERROR_TWITTER_GENERAL;
             error_message = error_node_text;
             purple_debug_error(purple_account_get_protocol_id(r->account), "Response error: Twitter error %s\n", error_message);
         }
-    }
+	  */
+	}
 
     if (error_type != TWITTER_REQUEST_ERROR_NONE) {
         /* Turns out this wasn't really a success. We got a twitter error instead of an HTTP error
          * So go through the error cycle 
-         *
+         */
         TwitterRequestErrorData *error_data = g_new0(TwitterRequestErrorData, 1);
         error_data->type = error_type;
         error_data->message = error_message;
@@ -526,14 +531,17 @@ static void twitter_json_request_success_cb(TwitterRequestor * r, const gchar * 
 
         g_free(error_data);
     } else {
-        purple_debug_info(purple_account_get_protocol_id(r->account), "Valid XML response, calling success func\n");
-        if (request_data->success_func)
+        purple_debug_info(purple_account_get_protocol_id(r->account), "Valid JSON response, calling success func\n");
+        if (request_data->success_func) {
+		  response_node = json_parser_get_root (parser);
             request_data->success_func(r, response_node, request_data->user_data);
+		}
     }
-	*/
 
     if (response_node != NULL)
-        xmlnode_free(response_node);
+	  g_object_unref (parser);
+	if (error != NULL)
+		g_error_free(error);
     if (error_node_text != NULL)
         g_free(error_node_text);
     g_free(request_data);
