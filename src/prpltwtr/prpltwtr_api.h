@@ -27,7 +27,7 @@
 typedef void    (*TwitterApiMultiStatusSuccessFunc) (PurpleAccount * account, xmlnode * node, gboolean last_page, gpointer user_data);
 typedef         gboolean(*TwitterApiMultiStatusErrorFunc) (PurpleAccount * account, const TwitterRequestErrorData * error_data, gpointer user_data);
 
-void            twitter_api_get_friends(TwitterRequestor * r, TwitterSendRequestMultiPageAllSuccessFunc success_func, TwitterSendRequestMultiPageAllErrorFunc error_func, gpointer data);
+void            twitter_api_get_friends(TwitterRequestor * r, TwitterSendRequestMultiPageAllSuccessFunc success_func, TwitterSendRequestMultiPageAllSuccessFunc success_json_func, TwitterSendRequestMultiPageAllErrorFunc error_func, gpointer data);
 
 void            twitter_api_get_home_timeline_all(TwitterRequestor * r, long long since_id, TwitterSendRequestMultiPageAllSuccessFunc success_func, TwitterSendRequestMultiPageAllErrorFunc error_func, gint max_count, gpointer data);
 

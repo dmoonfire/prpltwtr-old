@@ -76,7 +76,11 @@ static const gchar *twitter_option_url_get_rate_limit_status(PurpleAccount * acc
 
 static const gchar *twitter_option_url_get_friends(PurpleAccount * account)
 {
-    return twitter_api_create_url(account, TWITTER_PREF_URL_GET_FRIENDS);
+    if (twitter_option_api_use_json(account)) {
+		return twitter_api_create_url(account, TWITTER_PREF_URL_GET_FRIENDS_JSON);
+    } else {
+		return twitter_api_create_url(account, TWITTER_PREF_URL_GET_FRIENDS);
+	}
 }
 
 static const gchar *twitter_option_url_get_home_timeline(PurpleAccount * account)
@@ -334,7 +338,7 @@ void twitter_api_web_open_retweets_of_mine(PurplePluginAction * action)
     purple_notify_uri(NULL, url);
 }
 
-void twitter_api_get_friends(TwitterRequestor * r, TwitterSendRequestMultiPageAllSuccessFunc success_func, TwitterSendRequestMultiPageAllErrorFunc error_func, gpointer data)
+void twitter_api_get_friends(TwitterRequestor * r, TwitterSendRequestMultiPageAllSuccessFunc success_func, TwitterSendRequestMultiPageAllSuccessFunc success_json_func, TwitterSendRequestMultiPageAllErrorFunc error_func, gpointer data)
 {
 
     TwitterRequestParams *params = twitter_request_params_new();
@@ -342,8 +346,11 @@ void twitter_api_get_friends(TwitterRequestor * r, TwitterSendRequestMultiPageAl
 
     twitter_request_params_add(params, twitter_request_param_new("screen_name", r->account->username));
 
-    twitter_send_xml_request_with_cursor(r, twitter_option_url_get_friends(r->account), params, -1, success_func, error_func, data);
-
+    if (twitter_option_api_use_json(r->account)) {
+		twitter_send_json_request_with_cursor(r, twitter_option_url_get_friends(r->account), params, -1, success_json_func, error_func, data);
+	} else {
+		twitter_send_xml_request_with_cursor(r, twitter_option_url_get_friends(r->account), params, -1, success_func, error_func, data);
+	}
 }
 
 static void twitter_api_send_request_single(TwitterRequestor * r, const gchar * url, long long since_id, int count, int page, TwitterSendXmlRequestSuccessFunc success_func, TwitterSendRequestErrorFunc error_func, gpointer data)
@@ -693,10 +700,8 @@ void twitter_api_search_refresh(TwitterRequestor * r, const char *refresh_url,  
 void twitter_api_verify_credentials(TwitterRequestor * r, TwitterSendXmlRequestSuccessFunc success_cb, TwitterSendJsonRequestSuccessFunc success_json_cb, TwitterSendRequestErrorFunc error_cb, gpointer user_data)
 {
     if (twitter_option_api_use_json(r->account)) {
-        purple_debug_info(purple_account_get_protocol_id(r->account), "DREM twitter_api_verify_credentials using JSON\n");
         twitter_send_json_request(r, FALSE, twitter_option_url_verify_credentials(r->account), NULL, success_json_cb, error_cb, user_data);
 	} else {
-        purple_debug_info(purple_account_get_protocol_id(r->account), "DREM twitter_api_verify_credentials using XML\n");
         twitter_send_xml_request(r, FALSE, twitter_option_url_verify_credentials(r->account), NULL, success_cb, error_cb, user_data);
     }
 }

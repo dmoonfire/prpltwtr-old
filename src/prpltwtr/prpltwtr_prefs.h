@@ -111,6 +111,7 @@
 /***** START URLS *****/
 #define TWITTER_PREF_URL_GET_RATE_LIMIT_STATUS "/account/rate_limit_status.xml"
 #define TWITTER_PREF_URL_GET_FRIENDS "/friends/ids.xml"
+#define TWITTER_PREF_URL_GET_FRIENDS_JSON "/friends/ids.json"
 #define TWITTER_PREF_URL_GET_HOME_TIMELINE "/statuses/home_timeline.xml"
 #define TWITTER_PREF_URL_GET_LIST "/lists/"      /* We need to prepend the username and add the ID and then statuses.xml here */
 #define TWITTER_PREF_URL_GET_MENTIONS "/statuses/mentions.xml"

@@ -237,11 +237,15 @@ static void twitter_get_friends_cb(TwitterRequestor * r, GList * nodes, gpointer
 {
 }
 
+static void twitter_get_friends_json_cb(TwitterRequestor * r, GList * nodes, gpointer user_data)
+{
+}
+
 static gboolean twitter_get_friends_timeout(gpointer data)
 {
     PurpleAccount  *account = data;
     //TODO handle errors
-    twitter_api_get_friends(purple_account_get_requestor(account), twitter_get_friends_cb, NULL, NULL);
+    twitter_api_get_friends(purple_account_get_requestor(account), twitter_get_friends_cb, twitter_get_friends_json_cb, NULL, NULL);
     return TRUE;
 }
 
@@ -651,7 +655,7 @@ static void twitter_action_get_user_info(PurplePluginAction * action)
 {
     PurpleConnection *gc = (PurpleConnection *) action->context;
     PurpleAccount  *account = purple_connection_get_account(gc);
-    twitter_api_get_friends(purple_account_get_requestor(account), twitter_get_friends_cb, NULL, NULL);
+    twitter_api_get_friends(purple_account_get_requestor(account), twitter_get_friends_cb, twitter_get_friends_json_cb, NULL, NULL);
 }
 #endif
 
@@ -750,7 +754,7 @@ void prpltwtr_verify_connection(PurpleAccount * account)
     }
 
     if (twitter_option_get_following(account)) {
-        twitter_api_get_friends(purple_account_get_requestor(account), twitter_get_friends_verify_connection_cb, twitter_get_friends_verify_error_cb, NULL);
+        twitter_api_get_friends(purple_account_get_requestor(account), twitter_get_friends_verify_connection_cb, twitter_get_friends_verify_connection_cb, twitter_get_friends_verify_error_cb, NULL);
     } else {
         twitter_connected(account);
         if (twitter_option_cutoff_time(account) <= 0)

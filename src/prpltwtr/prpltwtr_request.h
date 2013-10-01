@@ -117,6 +117,7 @@ void            twitter_send_xml_request_multipage_all(TwitterRequestor * r, con
 /* statuses/friends API deprecated page based retrieval,
  * and use cursor based method instead */
 void            twitter_send_xml_request_with_cursor(TwitterRequestor * r, const char *url, TwitterRequestParams * params, long long cursor, TwitterSendRequestMultiPageAllSuccessFunc success_callback, TwitterSendRequestMultiPageAllErrorFunc error_callback, gpointer data);
+void            twitter_send_json_request_with_cursor(TwitterRequestor * r, const char *url, TwitterRequestParams * params, long long cursor, TwitterSendRequestMultiPageAllSuccessFunc success_callback, TwitterSendRequestMultiPageAllErrorFunc error_callback, gpointer data);
 
 TwitterRequestParams *twitter_request_params_add_oauth_params(PurpleAccount * account, gboolean post, const gchar * url, const TwitterRequestParams * params, const gchar * token, const gchar * signing_key);
 
