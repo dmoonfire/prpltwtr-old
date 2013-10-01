@@ -132,7 +132,11 @@ static const gchar *twitter_option_url_get_subscribed_lists(PurpleAccount * acco
 
 static const gchar *twitter_option_url_verify_credentials(PurpleAccount * account)
 {
-    return twitter_api_create_url(account, TWITTER_PREF_URL_VERIFY_CREDENTIALS);
+    if (twitter_option_api_use_json(account)) {
+        return twitter_api_create_url(account, TWITTER_PREF_URL_VERIFY_CREDENTIALS_JSON);
+    } else {
+        return twitter_api_create_url(account, TWITTER_PREF_URL_VERIFY_CREDENTIALS);
+	}
 }
 
 static const gchar *twitter_option_url_rt(PurpleAccount * account, long long id)
@@ -686,7 +690,13 @@ void twitter_api_search_refresh(TwitterRequestor * r, const char *refresh_url,  
     twitter_request_params_free(params);
 }
 
-void twitter_api_verify_credentials(TwitterRequestor * r, TwitterSendXmlRequestSuccessFunc success_cb, TwitterSendRequestErrorFunc error_cb, gpointer user_data)
+void twitter_api_verify_credentials(TwitterRequestor * r, TwitterSendXmlRequestSuccessFunc success_cb, TwitterSendJsonRequestSuccessFunc success_json_cb, TwitterSendRequestErrorFunc error_cb, gpointer user_data)
 {
-    twitter_send_xml_request(r, FALSE, twitter_option_url_verify_credentials(r->account), NULL, success_cb, error_cb, user_data);
+    if (twitter_option_api_use_json(r->account)) {
+        purple_debug_info(purple_account_get_protocol_id(r->account), "DREM twitter_api_verify_credentials using JSON\n");
+        twitter_send_json_request(r, FALSE, twitter_option_url_verify_credentials(r->account), NULL, success_json_cb, error_cb, user_data);
+	} else {
+        purple_debug_info(purple_account_get_protocol_id(r->account), "DREM twitter_api_verify_credentials using XML\n");
+        twitter_send_xml_request(r, FALSE, twitter_option_url_verify_credentials(r->account), NULL, success_cb, error_cb, user_data);
+    }
 }

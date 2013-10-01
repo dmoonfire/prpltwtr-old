@@ -326,6 +326,22 @@ TwitterUserTweet *twitter_verify_credentials_parse(xmlnode * node)
 	return data;
 }
 
+TwitterUserTweet *twitter_verify_credentials_json_parse(JsonNode * node)
+{
+  TwitterUserData *user = NULL; /* DREM twitter_user_node_parse(node);*/
+	TwitterTweet   *tweet;
+	TwitterUserTweet *data;
+	if (!user)
+		return NULL;
+
+	/* DREM
+	tweet = twitter_status_node_parse(xmlnode_get_child(node, "status"));
+	data = twitter_user_tweet_new(user->screen_name, user->profile_image_url, user, tweet);
+	*/
+
+	return data;
+}
+
 TwitterTweet   *twitter_dm_node_parse(xmlnode * dm_node)
 {
 	return twitter_status_node_parse(dm_node);

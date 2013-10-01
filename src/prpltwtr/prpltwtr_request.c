@@ -62,6 +62,12 @@ typedef struct {
 } TwitterSendXmlRequestData;
 
 typedef struct {
+    TwitterSendJsonRequestSuccessFunc success_func;
+    TwitterSendRequestErrorFunc error_func;
+    gpointer        user_data;
+} TwitterSendJsonRequestData;
+
+typedef struct {
     GList          *nodes;
     TwitterSendRequestMultiPageAllSuccessFunc success_callback;
     TwitterSendRequestMultiPageAllErrorFunc error_callback;
@@ -450,7 +456,7 @@ static void twitter_xml_request_success_cb(TwitterRequestor * r, const gchar * r
 
         g_free(error_data);
     } else {
-        purple_debug_info(purple_account_get_protocol_id(r->account), "Valid response, calling success func\n");
+        purple_debug_info(purple_account_get_protocol_id(r->account), "Valid XML response, calling success func\n");
         if (request_data->success_func)
             request_data->success_func(r, response_node, request_data->user_data);
     }
@@ -476,6 +482,7 @@ static void twitter_xml_request_error_cb(TwitterRequestor * r, const TwitterRequ
 
 void twitter_send_xml_request(TwitterRequestor * r, gboolean post, const char *url, TwitterRequestParams * params, TwitterSendXmlRequestSuccessFunc success_callback, TwitterSendRequestErrorFunc error_callback, gpointer data)
 {
+  purple_debug_error(purple_account_get_protocol_id(r->account), "twitter_send_xml_request\n");
 
     TwitterSendXmlRequestData *request_data = g_new0(TwitterSendXmlRequestData, 1);
     request_data->user_data = data;
@@ -483,6 +490,77 @@ void twitter_send_xml_request(TwitterRequestor * r, gboolean post, const char *u
     request_data->error_func = error_callback;
 
     twitter_send_request(r, post, url, params, twitter_xml_request_success_cb, twitter_xml_request_error_cb, request_data);
+}
+
+static void twitter_json_request_success_cb(TwitterRequestor * r, const gchar * response, gpointer user_data)
+{
+    TwitterSendJsonRequestData *request_data = user_data;
+    const gchar    *error_message = NULL;
+    gchar          *error_node_text = NULL;
+    xmlnode        *response_node = NULL;
+    TwitterRequestErrorType error_type = TWITTER_REQUEST_ERROR_NONE;
+
+	purple_debug_error(purple_account_get_protocol_id(r->account), "Response error: invalid JSON\n");
+	/* DREM
+    response_node = xmlnode_from_str(response, strlen(response));
+    if (!response_node) {
+        purple_debug_error(purple_account_get_protocol_id(r->account), "Response error: invalid xml\n");
+        error_type = TWITTER_REQUEST_ERROR_INVALID_XML;
+        error_message = response;
+    } else {
+        if ((error_message = twitter_xml_node_parse_error(response_node))) {
+            error_type = TWITTER_REQUEST_ERROR_TWITTER_GENERAL;
+            error_message = error_node_text;
+            purple_debug_error(purple_account_get_protocol_id(r->account), "Response error: Twitter error %s\n", error_message);
+        }
+    }
+
+    if (error_type != TWITTER_REQUEST_ERROR_NONE) {
+        /* Turns out this wasn't really a success. We got a twitter error instead of an HTTP error
+         * So go through the error cycle 
+         *
+        TwitterRequestErrorData *error_data = g_new0(TwitterRequestErrorData, 1);
+        error_data->type = error_type;
+        error_data->message = error_message;
+        twitter_requestor_on_error(r, error_data, request_data->error_func, request_data->user_data);
+
+        g_free(error_data);
+    } else {
+        purple_debug_info(purple_account_get_protocol_id(r->account), "Valid XML response, calling success func\n");
+        if (request_data->success_func)
+            request_data->success_func(r, response_node, request_data->user_data);
+    }
+	*/
+
+    if (response_node != NULL)
+        xmlnode_free(response_node);
+    if (error_node_text != NULL)
+        g_free(error_node_text);
+    g_free(request_data);
+}
+
+static void twitter_json_request_error_cb(TwitterRequestor * r, const TwitterRequestErrorData * error_data, gpointer user_data)
+{
+    /* This gets called after the pre_failed and before the post_failed.
+     * So we just pass the error along to our caller. No need to call the requestor_on_fail 
+     * In fact, if we do, we'll get an infinite loop
+     */
+    TwitterSendJsonRequestData *request_data = user_data;
+    if (request_data->error_func)
+        request_data->error_func(r, error_data, request_data->user_data);
+    g_free(request_data);
+}
+
+void twitter_send_json_request(TwitterRequestor * r, gboolean post, const char *url, TwitterRequestParams * params, TwitterSendJsonRequestSuccessFunc success_callback, TwitterSendRequestErrorFunc error_callback, gpointer data)
+{
+  purple_debug_error(purple_account_get_protocol_id(r->account), "twitter_send_json_request\n");
+
+    TwitterSendJsonRequestData *request_data = g_new0(TwitterSendJsonRequestData, 1);
+    request_data->user_data = data;
+    request_data->success_func = success_callback;
+    request_data->error_func = error_callback;
+
+    twitter_send_request(r, post, url, params, twitter_json_request_success_cb, twitter_json_request_error_cb, request_data);
 }
 
 static long long twitter_oauth_generate_nonce()

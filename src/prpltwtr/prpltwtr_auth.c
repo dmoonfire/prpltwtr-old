@@ -23,6 +23,7 @@
  */
 
 #include <glib/gstdio.h>
+#include <json-glib/json-glib.h>
 
 #include "prpltwtr.h"
 
@@ -37,6 +38,7 @@ static void     account_mismatch_screenname_change_ok_cb(TwitterAccountUserNameC
 static void     account_username_change_verify(PurpleAccount * account, const gchar * username);
 static void     verify_credentials_success_cb(TwitterRequestor * r, xmlnode * node, gpointer user_data);
 static void     verify_credentials_error_cb(TwitterRequestor * r, const TwitterRequestErrorData * error_data, gpointer user_data);
+static void     verify_credentials_success_json_cb(TwitterRequestor * r, JsonNode * node, gpointer user_data);
 static void     oauth_request_token_success_cb(TwitterRequestor * r, const gchar * response, gpointer user_data);
 static void     oauth_request_token_error_cb(TwitterRequestor * r, const TwitterRequestErrorData * error_data, gpointer user_data);
 static const gchar *account_get_oauth_access_token(PurpleAccount * account);
@@ -144,7 +146,7 @@ void prpltwtr_auth_oauth_login(PurpleAccount * account, TwitterConnectionData * 
     if (oauth_token && oauth_token_secret) {
         twitter->oauth_token = g_strdup(oauth_token);
         twitter->oauth_token_secret = g_strdup(oauth_token_secret);
-        twitter_api_verify_credentials(purple_account_get_requestor(account), verify_credentials_success_cb, verify_credentials_error_cb, NULL);
+        twitter_api_verify_credentials(purple_account_get_requestor(account), verify_credentials_success_cb, verify_credentials_success_json_cb, verify_credentials_error_cb, NULL);
     } else {
         twitter_send_request(purple_account_get_requestor(account), FALSE, twitter_option_url_oauth_request_token(account), NULL, oauth_request_token_success_cb, oauth_request_token_error_cb, NULL);
     }
@@ -253,6 +255,8 @@ static void account_username_change_verify(PurpleAccount * account, const gchar 
 
 static void verify_credentials_success_cb(TwitterRequestor * r, xmlnode * node, gpointer user_data)
 {
+        purple_debug_info(purple_account_get_protocol_id(r->account), "DREM verify_credentials_success_cb\n");
+
     PurpleAccount  *account = r->account;
     TwitterUserTweet *user_tweet = twitter_verify_credentials_parse(node);
     char          **userparts = g_strsplit(purple_account_get_username(r->account), "@", 2);
@@ -287,6 +291,28 @@ static void verify_credentials_error_cb(TwitterRequestor * r, const TwitterReque
         break;
     }
     g_free(error);
+}
+
+static void verify_credentials_success_json_cb(TwitterRequestor * r, JsonNode * node, gpointer user_data)
+{
+        purple_debug_info(purple_account_get_protocol_id(r->account), "DREM verify_credentials_success_json_cb\n");
+
+    PurpleAccount  *account = r->account;
+    TwitterUserTweet *user_tweet = twitter_verify_credentials_json_parse(node);
+    char          **userparts = g_strsplit(purple_account_get_username(r->account), "@", 2);
+    const char     *username = userparts[0];
+
+        purple_debug_info(purple_account_get_protocol_id(r->account), "DREM verify_credentials_success_json_cb 2\n");
+
+    if (!user_tweet || !user_tweet->screen_name) {
+        prpltwtr_disconnect(account, _("Could not verify credentials"));
+    } else if (!twitter_usernames_match(account, user_tweet->screen_name, username)) {
+        account_username_change_verify(account, user_tweet->screen_name);
+    } else {
+        prpltwtr_verify_connection(account);
+    }
+    g_strfreev(userparts);
+    twitter_user_tweet_free(user_tweet);
 }
 
 static void oauth_request_token_success_cb(TwitterRequestor * r, const gchar * response, gpointer user_data)

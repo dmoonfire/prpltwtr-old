@@ -26,6 +26,7 @@
 #define _TWITTER_REQUEST_H_
 
 #include <glib.h>
+#include <json-glib/json-glib.h>
 
 typedef struct {
     gchar          *name;
@@ -65,6 +66,7 @@ typedef struct {
 typedef void    (*TwitterSendRequestSuccessFunc) (TwitterRequestor * r, const gchar * response, gpointer user_data);
 
 typedef void    (*TwitterSendXmlRequestSuccessFunc) (TwitterRequestor * r, xmlnode * node, gpointer user_data);
+typedef void    (*TwitterSendJsonRequestSuccessFunc) (TwitterRequestor * r, JsonNode * node, gpointer user_data);
 typedef void    (*TwitterSendRequestErrorFunc) (TwitterRequestor * r, const TwitterRequestErrorData * error_data, gpointer user_data);
 
 struct _TwitterRequestor {
@@ -106,6 +108,8 @@ gpointer        twitter_requestor_send(TwitterRequestor * r, gboolean post, cons
 void            twitter_send_request(TwitterRequestor * r, gboolean post, const char *url, TwitterRequestParams * params, TwitterSendRequestSuccessFunc success_callback, TwitterSendRequestErrorFunc error_callback, gpointer data);
 
 void            twitter_send_xml_request(TwitterRequestor * r, gboolean post, const char *url, TwitterRequestParams * params, TwitterSendXmlRequestSuccessFunc success_callback, TwitterSendRequestErrorFunc error_callback, gpointer data);
+
+void            twitter_send_json_request(TwitterRequestor * r, gboolean post, const char *url, TwitterRequestParams * params, TwitterSendJsonRequestSuccessFunc success_callback, TwitterSendRequestErrorFunc error_callback, gpointer data);
 
 //don't include count in the query_string
 void            twitter_send_xml_request_multipage_all(TwitterRequestor * r, const char *url, TwitterRequestParams * params, TwitterSendRequestMultiPageAllSuccessFunc success_callback, TwitterSendRequestMultiPageAllErrorFunc error_callback, int expected_count, gint max_count, gpointer data);

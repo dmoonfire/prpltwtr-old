@@ -21,6 +21,9 @@ AC_CONFIG_HEADER([config.h])
 
 AC_DEFINE(PURPLE_PLUGINS, 1, [Define if plugins are enabled.])
 
+# Checks for libraries.
+PKG_CHECK_MODULES([JSON_GLIB], [json-glib-1.0])
+
 # Checks for programs.
 AC_PROG_CC
 AC_DISABLE_STATIC

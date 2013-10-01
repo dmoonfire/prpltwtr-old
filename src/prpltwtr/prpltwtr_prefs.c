@@ -160,6 +160,11 @@ static GList   *get_protocol_options(const char *protocol_id)
                                                   TWITTER_PREF_API_BASE,    /* pref name */
                                                   STATUSNET_PREF_API_BASE_DEFAULT); /* default value */
         options = g_list_append(options, option);
+
+		option = purple_account_option_string_new(_("API Format"), /* text shown to user */
+												  TWITTER_PREF_API_FORMAT, /* pref name */
+												  STATUSNET_PREF_API_FORMAT_DEFAULT); /* default value */
+		options = g_list_append(options, option);
     }
 
     return options;
@@ -284,6 +289,24 @@ static const gchar *twitter_get_subdir_from_base(const gchar * base)
     if (!base)
         return NULL;
     return strchr(base, '/');
+}
+
+const gboolean twitter_option_api_use_json(PurpleAccount * account)
+{
+    if (!strcmp(twitter_option_api_format(account), JSON_FORMAT)) {
+        return TRUE;
+    } else {
+	    return FALSE;
+    }
+}
+
+const gchar *twitter_option_api_format(PurpleAccount * account)
+{
+    if (!strcmp(purple_account_get_protocol_id(account), TWITTER_PROTOCOL_ID)) {
+        return purple_account_get_string(account, TWITTER_PREF_API_FORMAT, TWITTER_PREF_API_FORMAT_DEFAULT);
+    } else {
+        return purple_account_get_string(account, TWITTER_PREF_API_FORMAT, STATUSNET_PREF_API_FORMAT_DEFAULT);
+    }
 }
 
 const gchar    *twitter_option_api_host(PurpleAccount * account)

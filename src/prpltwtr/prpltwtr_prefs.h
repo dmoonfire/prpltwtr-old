@@ -81,8 +81,15 @@
 #define TWITTER_PREF_DEFAULT_DM_DEFAULT FALSE
 
 #define TWITTER_PREF_API_BASE "twitter_api_base_url"
-#define TWITTER_PREF_API_BASE_DEFAULT "api.twitter.com/1"
+#define TWITTER_PREF_API_BASE_DEFAULT "api.twitter.com/1.1"
 #define STATUSNET_PREF_API_BASE_DEFAULT "identi.ca/api"
+
+#define XML_FORMAT "xml"
+#define JSON_FORMAT "json"
+
+#define TWITTER_PREF_API_FORMAT "twitter_api_format"
+#define TWITTER_PREF_API_FORMAT_DEFAULT JSON_FORMAT
+#define STATUSNET_PREF_API_FORMAT_DEFAULT XML_FORMAT
 
 #define TWITTER_PREF_CONSUMER_KEY "consumer_key"
 #define TWITTER_PREF_CONSUMER_SECRET "consumer_secret"
@@ -115,6 +122,7 @@
 #define TWITTER_PREF_URL_GET_PERSONAL_LISTS "/lists.xml"
 #define TWITTER_PREF_URL_GET_SEARCH_RESULTS "/search.atom"
 #define TWITTER_PREF_URL_VERIFY_CREDENTIALS "/account/verify_credentials.xml"
+#define TWITTER_PREF_URL_VERIFY_CREDENTIALS_JSON "/account/verify_credentials.json"
 #define TWITTER_PREF_URL_RT "/statuses/retweet"  /* Yay for inconsistency */
 #define TWITTER_PREF_URL_DELETE_STATUS "/statuses/destroy"  /* Yay for inconsistency */
 #define TWITTER_PREF_URL_ADD_FAVORITE "/favorites/create"   /* Yay for inconsistency */
@@ -149,6 +157,8 @@ gint            twitter_option_list_max_tweets(PurpleAccount * account);
 gboolean        twitter_option_default_dm(PurpleAccount * account);
 gboolean        twitter_option_enable_conv_icon(PurpleAccount * account);
 
+const gboolean  twitter_option_api_use_json(PurpleAccount * account);
+const gchar    *twitter_option_api_format(PurpleAccount * account);
 const gchar    *twitter_option_api_host(PurpleAccount * account);
 const gchar    *twitter_option_api_subdir(PurpleAccount * account);
 const gchar    *twitter_option_web_host(PurpleAccount * account);

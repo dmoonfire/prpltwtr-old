@@ -57,7 +57,7 @@ pkg_LTLIBRARIES = \
 	libprpltwtr_statusnet.la
 
 libprpltwtr_la_SOURCES = $(PRPLTWTR_SOURCES)
-libprpltwtr_la_LIBADD = $(GLIB_LIBS)
+libprpltwtr_la_LIBADD = $(GLIB_LIBS) $(JSON_GLIB_LIBS)
 
 libprpltwtr_twitter_la_SOURCES = prpltwtr_plugin_twitter.c prpltwtr_plugin.h
 libprpltwtr_twitter_la_LIBADD = libprpltwtr.la
@@ -68,6 +68,7 @@ libprpltwtr_statusnet_la_LIBADD = libprpltwtr.la
 AM_CPPFLAGS = \
 	$(DEBUG_CFLAGS) \
 	$(GLIB_CFLAGS) \
+    $(JSON_GLIB_CFLAGS) \
 	$(PURPLE_CFLAGS) \
 	$(PURPLE_PLUGINS) \
 	-DLOCALEDIR=\"$(LIBPURPLE_DATADIR)/locale\"
