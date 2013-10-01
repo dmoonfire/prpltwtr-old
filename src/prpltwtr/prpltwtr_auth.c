@@ -295,7 +295,7 @@ static void verify_credentials_error_cb(TwitterRequestor * r, const TwitterReque
 
 static void verify_credentials_success_json_cb(TwitterRequestor * r, JsonNode * node, gpointer user_data)
 {
-        purple_debug_info(purple_account_get_protocol_id(r->account), "DREM verify_credentials_success_json_cb\n");
+	purple_debug_info(purple_account_get_protocol_id(r->account), "DREM verify_credentials_success_json_cb\n");
 
     PurpleAccount  *account = r->account;
     TwitterUserTweet *user_tweet = twitter_verify_credentials_json_parse(node);

@@ -244,6 +244,45 @@ TwitterUserData *twitter_user_node_parse(xmlnode * user_node)
 	return user;
 }
 
+const gchar *twitter_json_get_string(JsonNode * node, const gchar *key)
+{
+	JsonObject *node_object = json_node_get_object(node);
+	JsonNode *key_node = json_object_get_member(node_object, key);
+	const gchar *key_string = json_node_get_string(key_node);
+	return key_string;
+}
+
+TwitterUserData *twitter_user_json_parse(JsonNode * user_node)
+{
+	TwitterUserData *user;
+	gchar *id_str;
+
+	if (user_node == NULL)
+		return NULL;
+
+	user = g_new0(TwitterUserData, 1);
+	user->screen_name = twitter_json_get_string(user_node, "screen_name");
+
+	if (!user->screen_name) {
+		g_free(user);
+		return NULL;
+	}
+
+	user->name = twitter_json_get_string(user_node, "name");
+	user->profile_image_url = twitter_json_get_string(user_node, "profile_image_url");
+	id_str = twitter_json_get_string(user_node, "id");
+	if (id_str) {
+		user->id = strtoll(id_str, NULL, 10);
+		g_free(id_str);
+	}
+	user->statuses_count = twitter_json_get_string(user_node, "statuses_count");
+	user->friends_count = twitter_json_get_string(user_node, "friends_count");
+	user->followers_count = twitter_json_get_string(user_node, "followers_count");
+	user->description = twitter_json_get_string(user_node, "description");
+
+	return user;
+}
+
 TwitterTweet   *twitter_status_node_parse(xmlnode * status_node)
 {
 	TwitterTweet   *status;
@@ -298,6 +337,61 @@ TwitterTweet   *twitter_status_node_parse(xmlnode * status_node)
 	return status;
 }
 
+TwitterTweet   *twitter_status_json_parse(JsonNode * status_node)
+{
+	TwitterTweet   *status;
+	char           *data;
+	JsonNode       *retweeted_status = NULL;
+
+	if (status_node == NULL)
+		return NULL;
+
+	status = g_new0(TwitterTweet, 1);
+	status->text = twitter_json_get_string(status_node, "text");
+
+	if ((data = twitter_json_get_string(status_node, "created_at"))) {
+		time_t          created_at = twitter_status_parse_timestamp(data);
+		status->created_at = created_at ? created_at : time(NULL);
+		g_free(data);
+	}
+
+	if ((data = twitter_json_get_string(status_node, "id"))) {
+		status->id = strtoll(data, NULL, 10);
+		g_free(data);
+	}
+
+	if ((data = twitter_json_get_string(status_node, "in_reply_to_status_id"))) {
+		status->in_reply_to_status_id = strtoll(data, NULL, 10);
+		g_free(data);
+	}
+
+	if ((data = twitter_json_get_string(status_node, "favorited"))) {
+		status->favorited = !strcmp(data, "true") ? TRUE : FALSE;
+		g_free(data);
+	} else {
+		status->favorited = FALSE;
+	}
+	status->in_reply_to_screen_name = twitter_json_get_string(status_node, "in_reply_to_screen_name");
+
+	if ((retweeted_status = json_object_get_member(json_node_get_object(status_node), "retweeted_status")) != NULL) {
+		
+		gchar          *rt_text;
+		JsonNode       *rt_user;
+		gchar          *rt_user_name;
+		rt_text = twitter_json_get_string(retweeted_status, "text");
+		if ((rt_user = json_object_get_member(json_node_get_object(retweeted_status), "user")) != NULL) {
+			rt_user_name = twitter_json_get_string(rt_user, "screen_name");
+			// We don't need the original text, since it's cut off
+			g_free(status->text);
+			status->text = g_strconcat("RT @", rt_user_name, ": ", rt_text, NULL);
+			g_free(rt_user_name);
+		}
+		g_free(rt_text);
+	}
+
+	return status;
+}
+
 TwitterUserTweet *twitter_update_status_node_parse(xmlnode * update_status_node)
 {
 	TwitterTweet   *tweet = twitter_status_node_parse(update_status_node);
@@ -328,7 +422,7 @@ TwitterUserTweet *twitter_verify_credentials_parse(xmlnode * node)
 
 TwitterUserTweet *twitter_verify_credentials_json_parse(JsonNode * node)
 {
-  // DREM TwitterUserData *user = twitter_user_node_parse(node);
+	TwitterUserData *user = twitter_user_json_parse(node);
 	TwitterTweet   *tweet;
 	TwitterUserTweet *data;
 	if (!user)
@@ -336,8 +430,8 @@ TwitterUserTweet *twitter_verify_credentials_json_parse(JsonNode * node)
 
 	/* DREM
 	tweet = twitter_status_node_parse(xmlnode_get_child(node, "status"));
-	data = twitter_user_tweet_new(user->screen_name, user->profile_image_url, user, tweet);
 	*/
+	data = twitter_user_tweet_new(user->screen_name, user->profile_image_url, user, tweet);
 
 	return data;
 }
@@ -345,6 +439,11 @@ TwitterUserTweet *twitter_verify_credentials_json_parse(JsonNode * node)
 TwitterTweet   *twitter_dm_node_parse(xmlnode * dm_node)
 {
 	return twitter_status_node_parse(dm_node);
+}
+
+TwitterTweet   *twitter_dm_json_parse(JsonNode * dm_node)
+{
+	return twitter_status_json_parse(dm_node);
 }
 
 TwitterUserTweet *twitter_user_tweet_new(const char *screen_name, const gchar * icon_url, TwitterUserData * user, TwitterTweet * tweet)
